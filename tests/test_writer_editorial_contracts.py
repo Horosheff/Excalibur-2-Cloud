@@ -84,7 +84,7 @@ class WriterEditorialContractsTest(unittest.TestCase):
                 "# ledger\n\n"
                 "| date | topic_id | slug | url | status |\n"
                 "|------|----------|------|-----|--------|\n"
-                "| 2026-07-01 | B01 | demo-slug | /demo-slug/ | published |\n",
+                "| 2026-08-10 | B01 | demo-slug | /demo-slug/ | published |\n",
                 encoding="utf-8",
             )
             article_dir = root / "memory" / "blog" / "articles" / "B01-demo-slug"

@@ -26,12 +26,25 @@ artifacts:
 ---
 ```
 
-Required keys for merge: `role`, `status`, `completed_at`, `incident_report`.
+Required keys for merge: `role`, `status`, `completed_at`, `incident_report`,
+`topic_id` (`B<digits>` of the **current** run — INC-20260810-1620).
 `status` must be exactly `PASS` for a successful merge (or merge blocks on
 `BLOCKER`).
 
 The body starts with the role marker, e.g.
 `=== EXCALIBUR BLOG COVER ===`.
+
+### Write → merge race (HARD, INC-20260810-1620)
+
+Cover / Schema **пишут только свой fragment**. Они **не** вызывают
+`handoff_merge.py` сами.
+
+**Запрещено** запускать `handoff_merge.py` в том же parallel tool-batch, что
+и Write `.cursor/excalibur-blog-fragments/<role>.md` — merge читает диск и
+может вшить **чужой** fragment прошлого run (B155 в handoff B156).
+
+Порядок: Write fragment → дождаться завершения → **отдельный шаг** Director
+merge (или явный follow-up Shell после Write, никогда в одном batch).
 
 ### Cover example
 
@@ -75,17 +88,23 @@ verdict: PASS
 
 ## Director merge
 
-After every parallel wave:
+After every parallel wave (только Директор; Cover/Schema fragment-only):
 
 ```bash
 python3 scripts/excalibur_blog_handoff_merge.py \
   --handoff .cursor/excalibur-blog-handoff.md \
   --fragments-dir .cursor/excalibur-blog-fragments \
-  --wave cover,schema
+  --wave cover,schema \
+  --expect-topic-id Bxx
 ```
 
+`--expect-topic-id` опционален: если не передан, скрипт сверяет
+`topic_id` fragment с первым `topic_id:` в handoff (обычно SCOUT). Stale
+fragment прошлого topic → hard error (INC-20260810-1620).
+
 The merge is atomic and idempotent. It blocks on missing fragments, malformed
-frontmatter or `status: BLOCKER`. Only Director writes the final handoff.
+frontmatter, `topic_id` mismatch, or `status: BLOCKER`. Only Director writes
+the final handoff.
 
 ## Current fragment waves
 

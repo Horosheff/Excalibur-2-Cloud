@@ -9,6 +9,12 @@
   "cta_required": false,
   "cta_links": [],
   "cover_mode": "unset",
+  "cover_watermark": {
+    "enabled": false,
+    "handle": "",
+    "avatar_path": "",
+    "url": ""
+  },
   "dzen_rf_pack": true,
   "scout_signal_urls": [],
   "interlink_old_articles": false,

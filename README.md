@@ -1,14 +1,17 @@
 # Excalibur-2-Cloud
 
 Чистый агентный пайплайн блога для **Cursor Cloud**: Scout → Research →
-Title → Writer → Sol → Cover/Schema → Indexer → Publish.
+Title → Writer → Sol → Description → Cover/Schema → Indexer → Publish.
 
 В репозитории **нет** чужого слога, лица, CTA и статей. При первом запуске
 агент **Setup** спрашивает вас и заполняет настройки.
 
+Cloud Automation: **один** агент на весь пайплайн (роли = skill-файлы в той
+же сессии, без `Task(...)` → отдельный VM). См. [`CLOUD-AUTOMATION.md`](CLOUD-AUTOMATION.md).
+
 ## Быстрый старт
 
-1. Склонируйте **private** репозиторий в Cursor / подключите Cloud Environment.
+1. Склонируйте репозиторий в Cursor / подключите Cloud Environment.
 2. Прочитайте [`CLOUD-FIRST-RUN.md`](CLOUD-FIRST-RUN.md) — Secrets, MCP,
    **Memories OFF**.
 3. Запустите First-run automation / чат с промптом Setup.
@@ -37,4 +40,5 @@ Title → Writer → Sol → Cover/Schema → Indexer → Publish.
 
 ## Лицензия / доступ
 
-Репозиторий **закрытый**. Владелец открывает доступ сам.
+Публичный продуктовый скелет. Секреты и слог тенанта — только в Cloud Secrets
+и после Setup, не в git.

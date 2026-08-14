@@ -8,6 +8,8 @@ import re
 import tempfile
 from pathlib import Path
 
+_TOPIC_ID_RE = re.compile(r"(?m)^topic_id:\s*(B\d+)\s*$")
+
 
 def parse_fragment(path: Path) -> tuple[dict[str, str], str]:
     text = path.read_text(encoding="utf-8")
@@ -28,7 +30,7 @@ def parse_fragment(path: Path) -> tuple[dict[str, str], str]:
         if not sep:
             continue
         meta[key.strip()] = value.strip()
-    for key in ("role", "status", "completed_at", "incident_report"):
+    for key in ("role", "status", "completed_at", "incident_report", "topic_id"):
         if not meta.get(key):
             raise ValueError(f"{path}: frontmatter {key} missing")
     status = meta["status"]
@@ -37,7 +39,19 @@ def parse_fragment(path: Path) -> tuple[dict[str, str], str]:
             f"{path}: status={status!r} invalid; use PASS or BLOCKER "
             "(not emoji/lowercase) — shared/pipeline-fragment-protocol.md"
         )
+    topic = meta["topic_id"]
+    if not re.fullmatch(r"B\d+", topic):
+        raise ValueError(
+            f"{path}: topic_id={topic!r} invalid; expect B<digits> "
+            "(INC-20260810-1620 stale-fragment guard)"
+        )
     return meta, text[end + 5 :].strip()
+
+
+def handoff_topic_id(text: str) -> str | None:
+    """First topic_id in handoff body (usually SCOUT / current run)."""
+    match = _TOPIC_ID_RE.search(text)
+    return match.group(1) if match else None
 
 
 def block_for(role: str, body: str) -> str:
@@ -60,6 +74,11 @@ def main() -> int:
     parser.add_argument("--handoff", required=True)
     parser.add_argument("--fragments-dir", required=True)
     parser.add_argument("--wave", required=True, help="comma-separated fragment basenames")
+    parser.add_argument(
+        "--expect-topic-id",
+        default=None,
+        help="reject fragments whose frontmatter topic_id differs (INC-20260810-1620)",
+    )
     args = parser.parse_args()
     handoff = Path(args.handoff)
     fragments = Path(args.fragments_dir)
@@ -67,16 +86,28 @@ def main() -> int:
     if not handoff.is_file():
         parser.error(f"handoff missing: {handoff}")
     text = handoff.read_text(encoding="utf-8")
+    expected_topic = args.expect_topic_id or handoff_topic_id(text)
     merged: list[str] = []
     for name in expected:
         path = fragments / f"{name}.md"
         if not path.is_file():
             parser.error(f"expected fragment missing: {path}")
-        meta, body = parse_fragment(path)
+        try:
+            meta, body = parse_fragment(path)
+        except ValueError as exc:
+            parser.error(str(exc))
         if meta["status"] != "PASS":
             parser.error(f"{path}: status={meta['status']} (need PASS)")
         if not body:
             parser.error(f"{path}: body missing")
+        frag_topic = meta["topic_id"]
+        if expected_topic and frag_topic != expected_topic:
+            parser.error(
+                f"{path}: topic_id={frag_topic!r} != expect {expected_topic!r} "
+                "(stale fragment from prior run? Write fragment fully before "
+                "merge — INC-20260810-1620; Cover/Schema must not call merge "
+                "in the same parallel tool-batch as Write fragment)"
+            )
         text = replace_role(text, meta["role"], body)
         merged.append(meta["role"])
 
@@ -84,7 +115,8 @@ def main() -> int:
         tmp.write(text)
         tmp_name = tmp.name
     os.replace(tmp_name, handoff)
-    print(f"OK merged={','.join(merged)} handoff={handoff}")
+    topic_note = f" topic_id={expected_topic}" if expected_topic else ""
+    print(f"OK merged={','.join(merged)} handoff={handoff}{topic_note}")
     return 0
 
 

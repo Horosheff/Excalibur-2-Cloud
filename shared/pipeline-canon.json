@@ -103,6 +103,12 @@
     "soul_examples": "shared/soul-examples/",
     "gate": "scripts/excalibur_blog_opening_meta_gate.py"
   },
+  "sol_rewrite_depth": {
+    "gate": "scripts/excalibur_blog_sol_rewrite_depth_gate.py",
+    "max_verbatim_paragraph_ratio": 0.3,
+    "full_body_rewrite": true,
+    "note": "Sol must rewrite whole article, not only the lead"
+  },
   "h1_rules": {
     "no_series_templates": true,
     "max_len": 70,

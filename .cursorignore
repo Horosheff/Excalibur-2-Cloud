@@ -1,0 +1,24 @@
+# Heavy / bulk artifacts — keep out of LLM/index context.
+# Scripts (Indexer/Cover/Publish) still read these via filesystem paths.
+
+# Generated LLM indexes (Indexer writes via script; do not load into chat)
+memory/blog/llms-full.txt
+
+# Cover / inline image binaries (MB each × 160 articles)
+memory/blog/articles/**/cover/*.png
+memory/blog/articles/**/cover/*.jpg
+memory/blog/articles/**/cover/*.jpeg
+memory/blog/articles/**/cover/*.webp
+memory/blog/articles/**/cover/*.gif
+memory/blog/articles/**/cover/canvas-*.png
+memory/blog/articles/**/cover/quad-*.png
+
+# Other bulky media under articles
+memory/blog/articles/**/*.mp4
+memory/blog/articles/**/*.webm
+memory/blog/articles/**/*.zip
+
+# Local env / runtime noise
+memory/site.env.local
+**/.DS_Store
+**/__pycache__/

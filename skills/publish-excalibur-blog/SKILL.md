@@ -201,6 +201,18 @@ Dry-run: **агент читает** `cover_media` / `inline_media` — все �
 Interlinker удалён. Не добавляй inbound-ссылки из старых статей.
 Опционально: deploy llms (`--deploy-llms` / `excalibur_blog_llms_deploy.py`).
 
+**Titles-only memory (HARD):** после PASS publish (и обычно после merge)
+обнови ledger заголовков и **удали** локальный `article_dir` — не оставляй
+cover PNG / HTML / research в git:
+
+```bash
+python3 scripts/excalibur_blog_published_titles.py --days 30
+python3 scripts/excalibur_blog_memory_purge.py --drop-topic <topic_id>
+```
+
+Долгосрочная память = только строки title в `shared/published-titles.md`
+(окно 30 дней).
+
 ## Handoff block (шаблон)
 
 ```text

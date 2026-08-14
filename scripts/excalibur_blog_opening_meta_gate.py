@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Block research-brief / API-calque junk in article opening + meta description.
 
-Opening lives in article.html (Writer). Optional orphan lead.md is scanned
-if present; missing file is OK.
+Opening lives in article.html (Sol final prose). Optional orphan lead.md is
+scanned if present; missing file is OK.
 """
 from __future__ import annotations
 
@@ -13,8 +13,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from excalibur_blog_plain_language import allowlist_from_title, plain_language_errors
+except ImportError:
+    from scripts.excalibur_blog_plain_language import allowlist_from_title, plain_language_errors
 
-# Calque of "API" that reads as machine Russian, not Lebedev.
+
+# Calque of "API" that reads as machine Russian, not human voice.
 STYK_API_RE = re.compile(
     r"стык(?:а|у|ом|е|и)?\s+(?:для\s+программ|с\s+(?:сайтом|api)|с\s+api)"
     r"|без\s+(?:готового\s+)?стыка"
@@ -85,12 +90,42 @@ def check_article(article_dir: Path) -> dict[str, Any]:
         errors.append("article.meta.json missing")
 
     if html_path.is_file():
-        html = _plain(html_path.read_text(encoding="utf-8"))
+        raw_html = html_path.read_text(encoding="utf-8")
+        html = _plain(raw_html)
         head = html[:900]
         for h in _hits(head):
             errors.append(f"article.html-head: {h}")
         if STYK_API_RE.search(html):
             errors.append("article.html: api-calque-styk")
+        title = str(
+            meta.get("h1")
+            or meta.get("title")
+            or ""
+        )
+        title_brief = {}
+        tb_path = article_dir / "title-brief.json"
+        if tb_path.is_file():
+            try:
+                loaded_tb = json.loads(tb_path.read_text(encoding="utf-8"))
+                title_brief = loaded_tb if isinstance(loaded_tb, dict) else {}
+            except json.JSONDecodeError:
+                title_brief = {}
+        allow = allowlist_from_title(
+            title,
+            str(title_brief.get("h1") or ""),
+            str(title_brief.get("title") or ""),
+            str(title_brief.get("subject") or ""),
+        )
+        # Opening must stay human Russian for beginners — not a term pile.
+        errors.extend(
+            plain_language_errors(
+                head,
+                allow=allow,
+                max_latin=3,
+                max_jargon=1,
+                label="article.html-opening",
+            )
+        )
     else:
         errors.append("article.html missing")
 

@@ -1,5 +1,5 @@
 ---
-description: Excalibur-2-Cloud — оркестратор, Setup gate, Task(subagents), Cloud handoff
+description: Excalibur-2-Cloud — оркестратор, Setup gate, Cloud: роли без Task→VM
 alwaysApply: false
 ---
 
@@ -9,9 +9,12 @@ alwaysApply: false
 
 - Handoff: `.cursor/excalibur-blog-handoff.md` (не коммитить)
 - Fragments: `.cursor/excalibur-blog-fragments/` для cover||schema
-- Task agents: `.cursor/agents/excalibur-blog-*`
+- Task agents: `.cursor/agents/excalibur-blog-*` (локальный IDE)
 - Preflight: `scripts/excalibur_blog_today.py`, `excalibur_blog_research_start.py`
-- См. `AGENTS.md`, `CLOUD-FIRST-RUN.md`, `CLOUD-AUTOMATION.md`, `SETUP.md`
+- См. `AGENTS.md`, `CLOUD-FIRST-RUN.md`, `CLOUD-AUTOMATION.md`, `SETUP.md`,
+  `shared/cloud-cost-rules.md`
+- **Cloud Automation:** один оркестратор; **без** `Task(...)` → VM.
+  Роли выполняются в той же сессии по skill/agent файлам.
 
 ## Setup gate
 
@@ -21,22 +24,23 @@ alwaysApply: false
 ## Главный и субагенты
 
 - **Setup** — чат (не Task): `agents/excalibur-blog-setup.md`
-- **Директор** — чат (не Task): `agents/excalibur-blog-director.md`
-- **Субагенты** — `Task(<name>)`, см. `agents/FOR-AGENTS.md`
+- **Директор** — чат (не Task): `agents/excalibur-blog-director.md`,
+  skill `director-excalibur-blog`.
+- **Субагенты (локальный IDE)** — `Task(<name>)`, см. `agents/FOR-AGENTS.md`.
 
 ## Пайплайн (после setup)
 
-0. Scout Task при `needs_scout`, затем shell `research_start`
+0. Scout при `needs_scout`, затем shell `research_start`
 1. `excalibur-blog-research`
 2. `excalibur-blog-title`
 3. `excalibur-blog-writer` → `drafts/writer.html` (смысл)
-4. `excalibur-blog-sol` → `article.html` (слог SOUL + examples)
+4. `excalibur-blog-sol` → `article.html` (слог SOUL + examples, полный рерайт)
 5. `excalibur-blog-description` → `description-brief.json` (Дзен/RSS карточка)
-6. shell: `pipeline_canon --stamp` + opening_meta + description_gate + html_linter
+6. shell: `pipeline_canon --stamp` + opening_meta + sol_rewrite_depth + description_gate + html_linter
 7. **ПАРАЛЛЕЛЬНО** cover-text + schema → cover
 8. `excalibur-blog-indexer`
 9. `excalibur-blog-publish`
-10. fixer(open) → merge_to_main → content-learner
+10. fixer **только при open incidents** → merge_to_main → content-learner → purge
 
 Канон: `shared/pipeline-canon.json`.
 **Не возвращать** Critic/Panel/Thesis/Voice/Headline/Glavred/Visual QA.
@@ -46,5 +50,6 @@ alwaysApply: false
 - `Task(excalibur-blog-director)` / `Task(excalibur-blog-setup)`
 - субагенты не запускают вложенные Task (кроме Setup → setup-voice/visual)
 - cover||schema без **Sol** `article.html` + canon stamp
-- rewrite-loop поверх Sol
+- rewrite-loop поверх Sol (Sol — единственный стилевой рерайт)
 - пайплайн до завершения Setup
+- широкий обход `memory/blog` / чтение `llms-full.txt` целиком в LLM

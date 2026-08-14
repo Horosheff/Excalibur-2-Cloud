@@ -1,8 +1,8 @@
 {
   "name": "excalibur-2-cloud",
   "displayName": "Excalibur-2-Cloud",
-  "description": "Clean human-first blog pipeline for Cursor Cloud: Setup onboarding → Scout → Research → Title → Writer → Sol → Cover||Schema → Indexer → Publish.",
-  "version": "1.0.0",
+  "description": "Clean human-first blog pipeline for Cursor Cloud: one Automation run = one orchestrator (no Task→VM). Setup onboarding → Scout → Research → Title → Writer → Sol → Description → Cover||Schema → Indexer → Publish.",
+  "version": "1.1.0",
   "keywords": [
     "excalibur",
     "excalibur-2-cloud",

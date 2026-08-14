@@ -166,6 +166,24 @@ def main() -> int:
     opening = _load_json(article_dir / "opening-meta-gate.json")
     record("opening_meta", opening_rc == 0 and _hard_ok(opening), f"exit={opening_rc}")
 
+    rewrite_rc = run_cmd(
+        root,
+        [
+            py,
+            str(scripts / "excalibur_blog_sol_rewrite_depth_gate.py"),
+            "--article-dir",
+            str(article_dir),
+            "-o",
+            "sol-rewrite-depth-gate.json",
+        ],
+    )
+    rewrite = _load_json(article_dir / "sol-rewrite-depth-gate.json")
+    record(
+        "sol_rewrite_depth",
+        rewrite_rc == 0 and _hard_ok(rewrite),
+        f"exit={rewrite_rc}",
+    )
+
     desc_rc = run_cmd(
         root,
         [

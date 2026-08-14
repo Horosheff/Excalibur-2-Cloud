@@ -15,3 +15,12 @@ tmp/
 
 # test runtime fixtures
 memory/blog/articles/_cta_gate_fixture/
+
+# Titles-only canon: never commit cover binaries for done/in-flight articles
+memory/blog/articles/**/cover/**
+memory/blog/articles/**/*.png
+memory/blog/articles/**/*.jpg
+memory/blog/articles/**/*.jpeg
+memory/blog/articles/**/*.webp
+memory/blog/articles/**/*.gif
+memory/blog/articles/**/*.mp4
